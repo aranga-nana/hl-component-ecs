@@ -86,15 +86,6 @@ CloudFormation do
 
     user_data = []
     user_data << "#!/bin/bash\n"
-    if enable_rex_ray_plugin
-      user_data << "exec 2>>/var/log/ecs/ecs-agent-install.log\n"
-      user_data << "set -x\n"
-      user_data << "docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION= "
-      user_data << Ref("AWS::Region")
-      user_data << " --grant-all-permissions \n"
-      user_data << "sleep 4\n"
-      user_data << "docker plugin enable rexray/ebs:latest"
-    end
     user_data << "INSTANCE_ID=$(/opt/aws/bin/ec2-metadata --instance-id|/usr/bin/awk '{print $2}')\n"
     user_data << "hostname "
     user_data << Ref("EnvironmentName")
@@ -105,6 +96,12 @@ CloudFormation do
     user_data << "echo ECS_CLUSTER="
     user_data << Ref("EcsCluster")
     user_data << " >> /etc/ecs/ecs.config\n"
+    user_data << "echo EBS_REGION="
+    user_data << user_data << Ref("AWS::Region")
+    user_data << " >> /etc/environment\n"
+    user_data << "echo REXRAY_PREEMPT=true"
+    user_data << " >> /etc/environment\n"
+
     if enable_efs
       user_data << "mkdir /efs\n"
       user_data << "yum install -y nfs-utils\n"
