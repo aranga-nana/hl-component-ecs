@@ -111,7 +111,7 @@ CloudFormation do
       user_data << "until curl -s http://localhost:51678/v1/metadata\n"
       user_data << "do \n"
       user_data << " sleep 1 \n"
-      user_data << "done \n"
+      user_data << "'done\n'"
       user_data << "docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION= "
       user_data << Ref("AWS::Region")
       user_data << " --grant-all-permissions \n"
