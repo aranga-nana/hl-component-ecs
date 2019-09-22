@@ -86,6 +86,13 @@ CloudFormation do
 
     user_data = []
     user_data << "#!/bin/bash\n"
+    if enable_rex_ray_plugin
+      user_data << "exec 2>>/var/log/ecs/ecs-agent-install.log\n"
+      user_data << "set -x\n"
+      user_data << "docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION= "
+      user_data << Ref("AWS::Region")
+      user_data << " --grant-all-permissions \n"
+    end
     user_data << "INSTANCE_ID=$(/opt/aws/bin/ec2-metadata --instance-id|/usr/bin/awk '{print $2}')\n"
     user_data << "hostname "
     user_data << Ref("EnvironmentName")
@@ -106,13 +113,7 @@ CloudFormation do
       user_data << ".amazonaws.com:/ /efs\n"
 
     end
-    if enable_rex_ray_plugin
-      user_data << "exec 2>>/var/log/ecs/ecs-agent-install.log\n"
-      user_data << "set -x\n"
-      user_data << "docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION= "
-      user_data << Ref("AWS::Region")
-      user_data << " --grant-all-permissions \n"
-    end
+
 
     ecs_agent_extra_config.each do |key, value|
       user_data << "echo #{key}=#{value}"
