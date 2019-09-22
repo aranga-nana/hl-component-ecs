@@ -97,7 +97,7 @@ CloudFormation do
     user_data << Ref("EcsCluster")
     user_data << " >> /etc/ecs/ecs.config\n"
     user_data << "echo EBS_REGION="
-    user_data << user_data << Ref("AWS::Region")
+    user_data << Ref("AWS::Region")
     user_data << " >> /etc/environment\n"
     user_data << "echo REXRAY_PREEMPT=true"
     user_data << " >> /etc/environment\n"
