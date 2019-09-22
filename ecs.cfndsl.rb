@@ -102,6 +102,21 @@ CloudFormation do
       user_data << ".efs."
       user_data << Ref("AWS::Region")
       user_data << ".amazonaws.com:/ /efs\n"
+
+    end
+    if enable_rex_ray
+
+      user_data << "exec 2>>/var/log/ecs/ecs-agent-install.log\n"
+      user_data << "set -x\n"
+      user_data << "until curl -s http://localhost:51678/v1/metadata\n"
+      user_data << "do\n"
+      user_data << "   sleep 1\n"
+      user_data << "done"
+      user_data << "docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION="
+      user_data << Ref("AWS::Region")
+      user_data << " --grant-all-permissions\n"
+      user_data << "stop ecs\n" 
+      user_data << "start ecs\n"
     end
 
     ecs_agent_extra_config.each do |key, value|
