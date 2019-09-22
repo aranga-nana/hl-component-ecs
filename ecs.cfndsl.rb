@@ -104,7 +104,7 @@ CloudFormation do
       user_data << ".amazonaws.com:/ /efs\n"
 
     end
-    if enable_rex_ray
+    if enable_rex_ray_plugin
 
       user_data << "exec 2>>/var/log/ecs/ecs-agent-install.log\n"
       user_data << "set -x\n"

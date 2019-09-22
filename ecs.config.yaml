@@ -4,7 +4,7 @@ log_group_retention: 14
 # Set to false when you want to create
 # a fargate only ECS cluster.
 enable_ec2_cluster: true
-
+enable_rex_ray_plugin: false # by default this is false. this plugin helps to mount ebs volumes (use case: nosql databases file systems)
 # Set to true when you want to create and
 # attache a EFS mount to your ec2 ECS cluster.
 # enable_ec2_cluster must be set to true
