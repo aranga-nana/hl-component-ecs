@@ -61,7 +61,9 @@ CloudFormation do
 
     policies = []
     iam_policies.each do |name,policy|
-      policies << iam_policy_allow(name,policy['action'],policy['resource'] || '*')
+      if name != ecs-rex-ray || enable_rex_ray_plugin
+        policies << iam_policy_allow(name,policy['action'],policy['resource'] || '*')
+      end
     end if defined? iam_policies
 
     Role('Role') do

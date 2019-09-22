@@ -4,7 +4,8 @@ log_group_retention: 14
 # Set to false when you want to create
 # a fargate only ECS cluster.
 enable_ec2_cluster: true
-enable_rex_ray_plugin: false # by default this is false. this plugin helps to mount ebs volumes (use case: nosql databases file systems)
+# rex ray plugin. require to mount ebs, efs and s3 as docker volume. this will give added advanatage specially in ebs area where u need high performance  read and write without latency
+enable_rex_ray_plugin: false # by default this is false.
 # Set to true when you want to create and
 # attache a EFS mount to your ec2 ECS cluster.
 # enable_ec2_cluster must be set to true
@@ -35,3 +36,23 @@ iam_policies:
       - elasticloadbalancing:Describe*
       - elasticloadbalancing:RegisterInstancesWithLoadBalancer
       - elasticloadbalancing:RegisterTargets
+  ecs-rex-ray:
+    action:
+      - ec2:AttachVolume,
+      - ec2:CreateVolume,
+      - ec2:CreateSnapshot,
+      - ec2:CreateTags,
+      - ec2:DeleteVolume,
+      - ec2:DeleteSnapshot,
+      - ec2:DescribeAvailabilityZones,
+      - ec2:DescribeInstances,
+      - ec2:DescribeVolumes,
+      - ec2:DescribeVolumeAttribute,
+      - ec2:DescribeVolumeStatus,
+      - ec2:DescribeSnapshots,
+      - ec2:CopySnapshot,
+      - ec2:DescribeSnapshotAttribute,
+      - ec2:DetachVolume,
+      - ec2:ModifySnapshotAttribute,
+      - ec2:ModifyVolumeAttribute,
+      - ec2:DescribeTags
