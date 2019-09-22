@@ -92,6 +92,8 @@ CloudFormation do
       user_data << "docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION= "
       user_data << Ref("AWS::Region")
       user_data << " --grant-all-permissions \n"
+      user_data << "sleep 4\n"
+      user_data << "docker plugin enable rexray/ebs:latest"
     end
     user_data << "INSTANCE_ID=$(/opt/aws/bin/ec2-metadata --instance-id|/usr/bin/awk '{print $2}')\n"
     user_data << "hostname "
