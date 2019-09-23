@@ -86,6 +86,7 @@ CloudFormation do
 
     user_data = []
     user_data << "#!/bin/bash\n"
+    user_data << "yum install -y aws-cfn-bootstrap\n"
     user_data << "INSTANCE_ID=$(/opt/aws/bin/ec2-metadata --instance-id|/usr/bin/awk '{print $2}')\n"
     user_data << "hostname "
     user_data << Ref("EnvironmentName")
@@ -96,10 +97,6 @@ CloudFormation do
     user_data << "echo ECS_CLUSTER="
     user_data << Ref("EcsCluster")
     user_data << " >> /etc/ecs/ecs.config\n"
-    user_data << "EBS_REGION="
-    user_data << Ref("AWS::Region")
-    user_data << "\n"
-    user_data << "REXRAY_PREEMPT=true\n"
     if enable_efs
       user_data << "mkdir /efs\n"
       user_data << "yum install -y nfs-utils\n"
@@ -110,7 +107,17 @@ CloudFormation do
       user_data << ".amazonaws.com:/ /efs\n"
 
     end
-
+    user_data << "/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfig\n"
+    user_data << "/opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource AutoScaleGroup\n"
+    user_data << "exec 2>>/var/log/ecs/ecs-agent-install.log\n"
+    user_data << "set -x\n"
+    user_data << "until curl -s http://localhost:51678/v1/metadata\n"
+    user_data << "do\n"
+    user_data << "  sleep 1\n"
+    user_data << "done\n"
+    user_data << "docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION=${AWS::Region} --grant-all-permissions\n"
+    user_data << "stop ecs \n"
+    user_data << "start ecs \n"
 
     ecs_agent_extra_config.each do |key, value|
       user_data << "echo #{key}=#{value}"
@@ -139,6 +146,56 @@ CloudFormation do
       SecurityGroups [ Ref('SecurityGroupEcs') ]
       SpotPrice FnIf('SpotPriceSet', Ref('SpotPrice'), Ref('AWS::NoValue'))
       UserData FnBase64(FnJoin('',user_data))
+      Property('Metadata',{
+          "AWS::CloudFormation::Init": {
+            "config": {
+                "packages": {
+                    "yum": {
+                        "aws-cli": [],
+                        "jq": [],
+                        "ecs-init": []
+                    }
+                },
+                "commands": {
+                    "01_add_instance_to_cluster": {
+                        "command": {
+                            "Fn::Sub": "echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config"
+                        }
+                    },
+                    "02_start_ecs_agent": {
+                        "command": "start ecs"
+                    }
+                },
+                "files": {
+                    "/etc/cfn/cfn-hup.conf": {
+                        "mode": 256,
+                        "owner": "root",
+                        "group": "root",
+                        "content": {
+                            "Fn::Sub": "[main]\nstack=${AWS::StackId}\nregion=${AWS::Region}\n"
+                        }
+                    },
+                    "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                        "content": {
+                            "Fn::Sub": "[cfn-auto-reloader-hook]\ntriggers=post.update\npath=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init\naction=/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource ContainerInstances\n"
+                        }
+                    }
+                },
+                "services": {
+                    "sysvinit": {
+                        "cfn-hup": {
+                            "enabled": "true",
+                            "ensureRunning": "true",
+                            "files": [
+                                "/etc/cfn/cfn-hup.conf",
+                                "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+      });
     end
 
 
