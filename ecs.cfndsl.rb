@@ -177,7 +177,7 @@ CloudFormation do
                     },
                     "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
                         "content": {
-                            "Fn::Sub": "[cfn-auto-reloader-hook]\ntriggers=post.update\npath=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init\naction=/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource ContainerInstances\n"
+                            "Fn::Sub": "[cfn-auto-reloader-hook]\ntriggers=post.update\npath=Resources.LaunchConfig.Metadata.AWS::CloudFormation::Init\naction=/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfig\n"
                         }
                     }
                 },
