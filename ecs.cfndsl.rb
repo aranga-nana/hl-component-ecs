@@ -157,12 +157,7 @@ CloudFormation do
                     }
                 },
                 "commands": {
-                    "01_add_instance_to_cluster": {
-                        "command": {
-                            "Fn::Sub": "echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config"
-                        }
-                    },
-                    "02_start_ecs_agent": {
+                    "01_start_ecs_agent": {
                         "command": "start ecs"
                     }
                 },
