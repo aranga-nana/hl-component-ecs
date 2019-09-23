@@ -146,7 +146,7 @@ CloudFormation do
       SecurityGroups [ Ref('SecurityGroupEcs') ]
       SpotPrice FnIf('SpotPriceSet', Ref('SpotPrice'), Ref('AWS::NoValue'))
       UserData FnBase64(FnJoin('',user_data))
-      Property('Metadata',{
+      Metadata({
           "AWS::CloudFormation::Init": {
             "config": {
                 "packages": {
@@ -195,7 +195,7 @@ CloudFormation do
                 }
             }
         }
-      });
+      })
     end
 
 
